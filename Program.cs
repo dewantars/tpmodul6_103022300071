@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 
 class SayaTubeVideo
 {
@@ -8,21 +9,30 @@ class SayaTubeVideo
 
     public SayaTubeVideo(string title)
     {
-        if (string.IsNullOrEmpty(title))
-            throw new ArgumentException("Judul tidak boleh kosong");
+        Debug.Assert(!string.IsNullOrEmpty(title), "Title tidak boleh kosong");
+        Debug.Assert(title.Length <= 100, "panjang title tidak boleh lebih dari 100");
 
         Random random = new Random();
-        this.id = random.Next(10000, 100000);
+        this.id = random.Next(10000, 99999); 
         this.title = title;
         this.playCount = 0;
     }
 
     public void IncreasePlayCount(int count)
     {
-        if (count < 0)
-            throw new ArgumentException("Play count tidak boleh negatif");
+        Debug.Assert(count > 0 && count <= 10000000, "Play count tidak valid");
 
-        this.playCount += count;
+        try
+        {
+            checked
+            {
+                this.playCount += count;
+            }
+        }
+        catch (OverflowException ex)
+        {
+            Console.WriteLine("Error: Play count overflow. " + ex.Message);
+        }
     }
 
     public void PrintVideoDetails()
@@ -39,7 +49,12 @@ class Program
     static void Main(string[] args)
     {
         SayaTubeVideo video = new SayaTubeVideo("Tutorial Design By Contract – [DEWANTA RS]");
-        video.IncreasePlayCount(100); 
+
+        for (int i = 0; i < 25; i++) // pengujian overflow
+        {
+            video.IncreasePlayCount(100000000);
+        }
+
         video.PrintVideoDetails();
     }
 }
